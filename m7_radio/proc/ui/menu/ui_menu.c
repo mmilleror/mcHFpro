@@ -1,24 +1,22 @@
 
 #include "mchf_pro_board.h"
 
+#include "ui_menu_layout.h"
 #include "gui.h"
 #include "dialog.h"
-//#include "ST_GUI_Addons.h"
 #include "c_keypad.h"
 
-#include "k_module.h"
+#include "ui_menu_module.h"
 #include "ui_menu.h"
-
-// ---------------------------------------------------------
-// ST Animated control or standard emWin IconView
-//
-#define	USE_ANIMATED_ICON_VIEW
-//
-// ---------------------------------------------------------
 
 #define ID_ICONVIEW_MENU               	(GUI_ID_USER + 0x00)
 #define ID_MENU_NAME                	(GUI_ID_USER + 0xD0)
 
+// Menu layout definitions from Flash
+extern const struct UIMenuLayout menu_layout[];
+
+// UI driver public state
+extern struct	UI_DRIVER_STATE			ui_s;
 
 ICONVIEW_Handle	hIcon;
 //WM_HWIN      	hCPULoad;
@@ -44,15 +42,17 @@ static void ui_menu_update_footer_text(char *text)
 	// strlen check ??
 	// ...
 
-	GUI_SetColor(GUI_ORANGE);
-	GUI_FillRect(FOOTER_EDIT_X, FOOTER_EDIT_Y,(FOOTER_EDIT_X + FOOTER_EDIT_X_SIZE),(FOOTER_EDIT_Y + FOOTER_EDIT_Y_SIZE - 2));
+	GUI_SetColor(menu_layout[ui_s.theme_id].mbar_bkg_clr);
+	GUI_FillRect(	(menu_layout[ui_s.theme_id].mbar_x),
+					(menu_layout[ui_s.theme_id].mbar_y),
+					(menu_layout[ui_s.theme_id].mbar_x + menu_layout[ui_s.theme_id].mbar_sz_x),
+					(menu_layout[ui_s.theme_id].mbar_y + menu_layout[ui_s.theme_id].mbar_sz_y - 2));
 
 	TEXT_SetText(hItem,text);
 
 	WM_InvalidateWindow(hItem);
 }
 
-#ifdef USE_ANIMATED_ICON_VIEW
 static void _cbBk(WM_MESSAGE * pMsg)
 {
 	uint32_t NCode, Id;
@@ -107,12 +107,16 @@ static void _cbBk(WM_MESSAGE * pMsg)
 				//printf("WM_PAINT, initial\r\n");
 
 				// Menu window back colour
-				GUI_SetBkColor(GUI_WHITE);
+				GUI_SetBkColor(menu_layout[ui_s.theme_id].bkg_color);
 				GUI_Clear();
 
 				// Create footer
-				GUI_SetColor(GUI_ORANGE);
-				GUI_FillRoundedRect(5, 435, 795, 475, 10);
+				GUI_SetColor(menu_layout[ui_s.theme_id].mbar_bkg_clr);
+				GUI_FillRoundedRect(	(menu_layout[ui_s.theme_id].mbar_x),
+										(menu_layout[ui_s.theme_id].mbar_y),
+										(menu_layout[ui_s.theme_id].mbar_sz_x + 535),
+										(menu_layout[ui_s.theme_id].mbar_y + menu_layout[ui_s.theme_id].mbar_sz_y - 2),
+										10);
 
 				WM_SetFocus(hIcon);
 
@@ -191,9 +195,8 @@ static void _cbBk(WM_MESSAGE * pMsg)
 			WM_DefaultProc(pMsg);
 	}
 }
-#endif
 
-void ui_periodic_processes(void)
+void ui_menu_periodic_processes(void)
 {
 #if 0
 	char 		tmp[16];
@@ -222,7 +225,7 @@ void ui_periodic_processes(void)
 #endif
 }
 
-void ui_set_gui_profile(void)
+void ui_menu_set_gui_profile(void)
 {
 	BUTTON_SetDefaultSkin(BUTTON_SKIN_FLEX);
 	DROPDOWN_SetDefaultSkin(DROPDOWN_SKIN_FLEX);
@@ -283,8 +286,8 @@ void ui_set_gui_profile(void)
   	//--SCROLLBAR_SetDefaultSTSkin();
 
   	//RADIO_SetDefaultFont(&GUI_FontAvantGarde16);
-  	RADIO_SetDefaultFocusColor(GUI_LIGHTBLUE);
-  	RADIO_SetDefaultTextColor(GUI_LIGHTBLUE);
+  	//RADIO_SetDefaultFocusColor(GUI_LIGHTBLUE);
+  	//RADIO_SetDefaultTextColor(GUI_LIGHTBLUE);
 
   	CALENDAR_SetDefaultSize(CALENDAR_SI_HEADER, 50);
 
@@ -295,8 +298,7 @@ void ui_set_gui_profile(void)
   	CALENDAR_SetDefaultFont(CALENDAR_FI_HEADER, GUI_FONT_24_1);
 }
 
-#ifdef USE_ANIMATED_ICON_VIEW
-void ui_init_menu(void)
+void ui_menu_init(void)
 {
 	uint8_t i = 0;
 
@@ -305,65 +307,62 @@ void ui_init_menu(void)
     // Create desktop
     WM_SetCallback(WM_GetDesktopWindowEx(0), _cbBk);
 
-    //hIcon = ST_AnimatedIconView_CreateEx(	0,
-    hIcon = ICONVIEW_CreateEx( 0,
-    										0,
-											LCD_GetXSize() - 0,
-											LCD_GetYSize() - 0,
-											WM_GetDesktopWindowEx(0),
-											WM_CF_SHOW | WM_CF_HASTRANS | WM_CF_LATE_CLIP,
-											0,
-											ID_ICONVIEW_MENU,
-											200,										// xsize items
-											143											// ysize items
-											);
+    hIcon = ICONVIEW_CreateEx(	menu_layout[ui_s.theme_id].iconview_x,
+    							menu_layout[ui_s.theme_id].iconview_y,
+								LCD_GetXSize() - 0,
+								LCD_GetYSize() - 0,
+								WM_GetDesktopWindowEx(0),
+								WM_CF_SHOW | WM_CF_HASTRANS | WM_CF_LATE_CLIP,
+								0,
+								ID_ICONVIEW_MENU,
+								200,										// xsize items
+								143);										// ysize items
 
-    //ST_AnimatedIconView_SetDualFont(hIcon, &GUI_FontAvantGarde20, &GUI_FontAvantGarde20);
-    ICONVIEW_SetFont(hIcon, &GUI_Font20_1);
+    ICONVIEW_SetFont		(hIcon, &GUI_Font20_1);
+    //
+    ICONVIEW_SetSpace		(hIcon, GUI_COORD_Y, 		0);
+    ICONVIEW_SetSpace		(hIcon, GUI_COORD_X, 		0);
+    //
+    ICONVIEW_SetFrame		(hIcon, GUI_COORD_Y, 		0);
+    ICONVIEW_SetFrame		(hIcon, GUI_COORD_X, 		0);
+	//
+	ICONVIEW_SetBkColor		(hIcon, ICONVIEW_CI_UNSEL, 	menu_layout[ui_s.theme_id].iconview_bkg_clr_unsel);	//		GUI_GRAY
+	ICONVIEW_SetBkColor		(hIcon, ICONVIEW_CI_SEL, 	menu_layout[ui_s.theme_id].iconview_bkg_clr_sel);	//		GUI_WHITE
+	//
+	ICONVIEW_SetTextColor	(hIcon, ICONVIEW_CI_UNSEL,	menu_layout[ui_s.theme_id].iconview_txt_clr_unsel);	//		GUI_RED
+	ICONVIEW_SetTextColor	(hIcon, ICONVIEW_CI_SEL,	menu_layout[ui_s.theme_id].iconview_txt_clr_sel);	//		GUI_BLACK
 
-    //ST_AnimatedIconView_SetSpace(hIcon, GUI_COORD_Y, 0);
-    ICONVIEW_SetSpace(hIcon, GUI_COORD_Y, 0);
-    //ST_AnimatedIconView_SetSpace(hIcon, GUI_COORD_X, 0);
-    ICONVIEW_SetSpace(hIcon, GUI_COORD_X, 0);
-
-    //ST_AnimatedIconView_SetFrame(hIcon, GUI_COORD_Y, 0);
-    ICONVIEW_SetFrame(hIcon, GUI_COORD_Y, 0);
-    //ST_AnimatedIconView_SetFrame(hIcon, GUI_COORD_X, 0);
-    ICONVIEW_SetFrame(hIcon, GUI_COORD_X, 0);
-
-    //ST_AnimatedIconView_SetTextColor(hIcon, 	ICONVIEW_CI_UNSEL,		GUI_BLUE);
-    ICONVIEW_SetTextColor(hIcon, 	ICONVIEW_CI_UNSEL,		GUI_BLUE);
-    //ST_AnimatedIconView_SetTextColor(hIcon, 	ICONVIEW_CI_SEL,	 	GUI_RED);
-	ICONVIEW_SetTextColor(hIcon, 	ICONVIEW_CI_SEL,	 	GUI_RED);
-
-    //ST_AnimatedIconView_SetBkColor(hIcon, ICONVIEW_CI_UNSEL, GUI_WHITE);
-	ICONVIEW_SetBkColor(hIcon, ICONVIEW_CI_UNSEL, GUI_WHITE);
-    //ST_AnimatedIconView_SetBkColor(hIcon, ICONVIEW_CI_SEL, GUI_WHITE);
-	ICONVIEW_SetBkColor(hIcon, ICONVIEW_CI_SEL, GUI_WHITE);
-
-    //ST_AnimatedIconView_SetSel(hIcon, -1);
 	ICONVIEW_SetSel(hIcon, -1);
-    //ST_AnimatedIconView_SetDualTextColor(hIcon, ICONVIEW_CI_SEL, GUI_LIGHTBLUE, GUI_DARKBLUE);
 
-    for (i = 0; i < k_ModuleGetNumber(); i++)
-    {
-    	//ST_AnimatedIconView_AddIcon(hIcon, module_prop[i].module->open_icon, module_prop[i].module->close_icon, (char *)module_prop[i].module->name);
+    for(i = 0; i < k_ModuleGetNumber(); i++)
     	ICONVIEW_AddBitmapItem(hIcon, module_prop[i].module->icon, (char *)module_prop[i].module->name);
-    }
 
     // Create footer text control
-    hItem = TEXT_CreateEx(FOOTER_EDIT_X, FOOTER_EDIT_Y, FOOTER_EDIT_X_SIZE, FOOTER_EDIT_Y_SIZE, WM_GetDesktopWindowEx(0), WM_CF_SHOW, TEXT_CF_LEFT, ID_MENU_NAME, "Main Menu");
+    hItem = TEXT_CreateEx(	(menu_layout[ui_s.theme_id].mbar_x + 10),
+    						(menu_layout[ui_s.theme_id].mbar_y + 3),
+							(menu_layout[ui_s.theme_id].mbar_sz_x),
+							(menu_layout[ui_s.theme_id].mbar_sz_y),
+							WM_GetDesktopWindowEx(0),
+							WM_CF_SHOW,
+							TEXT_CF_LEFT,
+							ID_MENU_NAME,
+							"Main Menu");
+
     TEXT_SetFont(hItem, &GUI_Font24B_1);
-    TEXT_SetTextColor(hItem, GUI_WHITE);
+    TEXT_SetTextColor(hItem, menu_layout[ui_s.theme_id].mbar_txt_clr);
 
     // Doesn't work in menu, maybe create in each individual menu item ?
     //hKeypad = GUI_CreateKeyPad(WM_GetDesktopWindowEx(0));
 
     WM_SetFocus(hIcon);
-}
-#endif
 
-void ui_destroy_menu(void)
+    //printf("1: %d\r\n", menu_layout[ui_s.theme_id].mbar_x);
+    //printf("2: %d\r\n", menu_layout[ui_s.theme_id].mbar_y);
+    //printf("3: %d\r\n", menu_layout[ui_s.theme_id].mbar_sz_x);
+    //printf("4: %d\r\n", menu_layout[ui_s.theme_id].mbar_sz_y);
+}
+
+void ui_menu_destroy(void)
 {
 	WM_DeleteWindow		(hIcon);
 	WM_DeleteWindow		(hItem);

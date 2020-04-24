@@ -27,7 +27,7 @@
 #include "task.h"
 
 //#include "aa_res.c"
-#include "k_module.h"
+#include "ui_menu_module.h"
 
 // temp, from digitizer driver
 //extern uchar digitizer_info[];

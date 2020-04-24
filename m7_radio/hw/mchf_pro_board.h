@@ -169,7 +169,7 @@ struct UI_DRIVER_STATE {
 	// Flag to lock out keyboard driver request updates while GUI repaints
 	uchar	lock_requests;
 	//
-	uchar	dummy;
+	uchar	theme_id;
 	//
 } UI_DRIVER_STATE;
 //

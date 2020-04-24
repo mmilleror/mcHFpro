@@ -1,10 +1,9 @@
 
-#ifndef __K_MODULE_H
-#define __K_MODULE_H
+#ifndef __UI_MENU_MODULE_H
+#define __UI_MENU_MODULE_H
 
 #include "gui.h"
 #include "dialog.h"
-//#include "ST_GUI_Addons.h"
    
 typedef struct
 {

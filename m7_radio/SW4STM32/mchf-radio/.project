@@ -792,16 +792,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/lcd_driver/LCDConf.h</locationURI>
 		</link>
 		<link>
-			<name>proc/ui/menu/k_module.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/menu/k_module.c</locationURI>
-		</link>
-		<link>
-			<name>proc/ui/menu/k_module.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/menu/k_module.h</locationURI>
-		</link>
-		<link>
 			<name>proc/ui/menu/ui_menu.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/menu/ui_menu.c</locationURI>
@@ -810,6 +800,26 @@
 			<name>proc/ui/menu/ui_menu.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/menu/ui_menu.h</locationURI>
+		</link>
+		<link>
+			<name>proc/ui/menu/ui_menu_layout.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/menu/ui_menu_layout.c</locationURI>
+		</link>
+		<link>
+			<name>proc/ui/menu/ui_menu_layout.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/menu/ui_menu_layout.h</locationURI>
+		</link>
+		<link>
+			<name>proc/ui/menu/ui_menu_module.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/menu/ui_menu_module.c</locationURI>
+		</link>
+		<link>
+			<name>proc/ui/menu/ui_menu_module.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/menu/ui_menu_module.h</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/OpenAMP/libmetal/generic/generic_device.c</name>

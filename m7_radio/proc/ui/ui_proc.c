@@ -60,7 +60,7 @@
 //#include "desktop_ft8\ui_desktop_ft8.h"
 // -----------------------------------------------------------------------------------------------
 // Menu Mode
-#include "menu\k_module.h"
+#include "menu\ui_menu_module.h"
 #include "menu\ui_menu.h"
 // Menu items
 extern K_ModuleItem_Typedef  	dsp_s;				// Standard DSP Menu
@@ -183,7 +183,6 @@ static void _cbBk(WM_MESSAGE * pMsg)
 	}
 }
 
-
 //*----------------------------------------------------------------------------
 //* Function Name       :
 //* Object              :
@@ -264,14 +263,14 @@ static void ui_driver_change_mode(void)
 			WM_InvalidateWindow	(WM_HBKWIN);
 
 			// Clear screen
-			GUI_SetBkColor(GUI_BLACK);
-			GUI_Clear();
+			//GUI_SetBkColor(GUI_BLACK);
+			//GUI_Clear();
 
 			// Set General Graphical properties
-			ui_set_gui_profile();
+			ui_menu_set_gui_profile();
 
 			// Show the main menu
-			ui_init_menu();
+			ui_menu_init();
 
 			// Initial paint
 			GUI_Exec();
@@ -353,7 +352,7 @@ static void ui_driver_change_mode(void)
 			printf("Entering Desktop mode...\r\n");
 
 			// Destroy any Window Manager items
-			ui_destroy_menu();
+			ui_menu_destroy();
 //!			ui_side_enc_menu_destroy();
 //!			ui_desktop_ft8_destroy();
 //!			ui_quick_log_destroy();
@@ -563,6 +562,7 @@ void ui_proc_task(void const *arg)
 	ui_s.req_state 				= MODE_DESKTOP;
 	ui_s.cur_state 				= MODE_DESKTOP;
 	ui_s.lock_requests			= 0;
+	ui_s.theme_id				= 0;
 
 	// Init graphics lib
 	ui_driver_emwin_init();
@@ -594,11 +594,8 @@ void ui_proc_task(void const *arg)
 	// Prepare menu screen
 	if(ui_s.cur_state == MODE_MENU)
 	{
-		GUI_SetBkColor(GUI_LIGHTBLUE);
-		GUI_Clear();
-
-		ui_set_gui_profile();
-		ui_init_menu();
+		ui_menu_set_gui_profile();
+		ui_menu_init();
 
 		GUI_Exec();
 	}

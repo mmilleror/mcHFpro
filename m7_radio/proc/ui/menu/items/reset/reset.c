@@ -34,7 +34,7 @@
 #include "dialog.h"
 //#include "ST_GUI_Addons.h"
 
-#include "k_module.h"
+#include "ui_menu_module.h"
 
 extern GUI_CONST_STORAGE GUI_BITMAP bmResetIcon;
   

@@ -1,44 +1,31 @@
-/**
-  ******************************************************************************
-  * @file    settings_win.c
-  * @author  MCD Application Team
-  * @version V1.1.1
-  * @date    18-November-2015
-  * @brief   settings functions
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
-  *
-  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
-  * You may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at:
-  *
-  *        http://www.st.com/software_license_agreement_liberty_v2
-  *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  *
-  ******************************************************************************
-  */
-
+/************************************************************************************
+**                                                                                 **
+**                             mcHF Pro QRP Transceiver                            **
+**                         Krassi Atanassov - M0NKA 2012-2020                      **
+**                            mail: djchrismarc@gmail.com                          **
+**                                 twitter: @bph_co                                **
+**---------------------------------------------------------------------------------**
+**                                                                                 **
+**  File name:                                                                     **
+**  Description:                                                                   **
+**  Last Modified:                                                                 **
+**  Licence:                                                                       **
+**          The mcHF project is released for radio amateurs experimentation,       **
+**          non-commercial use only. All source files under GPL-3.0, unless        **
+**          third party drivers specifies otherwise. Thank you!                    **
+************************************************************************************/
 #include "mchf_pro_board.h"
 
+#include "ui_menu_layout.h"
 #include "gui.h"
 #include "dialog.h"
-//#include "ST_GUI_Addons.h"
 
-//#include "aa_res.c"
-#include "k_module.h"
+#include "ui_menu_module.h"
 
 extern GUI_CONST_STORAGE GUI_BITMAP bmicon_consumer;
 
-//const GUI_BITMAP * user_i_anim[] = {
-//  &bmicon_consumer,   &bmicon_consumer,   &bmicon_consumer,   &bmicon_consumer, &bmicon_consumer
-//};
+// UI driver public state
+extern struct	UI_DRIVER_STATE			ui_s;
   
 static void Startup(WM_HWIN hWin, uint16_t xpos, uint16_t ypos);
 
@@ -58,6 +45,8 @@ K_ModuleItem_Typedef  user_i =
 #define ID_CHECKBOX_1				(GUI_ID_USER + 0x03)
 #define ID_CHECKBOX_2				(GUI_ID_USER + 0x04)
 
+#define ID_RADIO_0         			(GUI_ID_USER + 0x05)
+
 static const GUI_WIDGET_CREATE_INFO _aDialog[] = 
 {
 	// -----------------------------------------------------------------------------------------------------------------------------
@@ -68,12 +57,15 @@ static const GUI_WIDGET_CREATE_INFO _aDialog[] =
 	// Back Button
 	{ BUTTON_CreateIndirect, 	"Back",			 			ID_BUTTON_EXIT, 	670, 	375, 	120, 	45, 	0, 		0x0, 	0 },
 	// Check boxes
-	{ CHECKBOX_CreateIndirect,	"Checkbox", 				ID_CHECKBOX_0, 		20, 	 20,	250, 	30, 	0, 		0x0, 	0 },
-	{ CHECKBOX_CreateIndirect,	"Checkbox", 				ID_CHECKBOX_1, 		20, 	 70,	250, 	30, 	0, 		0x0, 	0 },
-	{ CHECKBOX_CreateIndirect,	"Checkbox", 				ID_CHECKBOX_2, 		20, 	120,	250, 	30, 	0, 		0x0, 	0 },
+	{ CHECKBOX_CreateIndirect,	"Checkbox", 				ID_CHECKBOX_0, 		20, 	 40,	250, 	30, 	0, 		0x0, 	0 },
+	{ CHECKBOX_CreateIndirect,	"Checkbox", 				ID_CHECKBOX_1, 		20, 	 90,	250, 	30, 	0, 		0x0, 	0 },
+	{ CHECKBOX_CreateIndirect,	"Checkbox", 				ID_CHECKBOX_2, 		20, 	140,	250, 	30, 	0, 		0x0, 	0 },
+	//
+	// Radio box						    																(spacing << 8)|(no_items)
+	{ RADIO_CreateIndirect, 	"Radio", 					ID_RADIO_0, 		600, 	 40, 	160, 	80, 	0, 		0x2003,	0 },
 };
 
-extern 	osMessageQId 			hEspMessage;
+//extern 	osMessageQId 			hEspMessage;
 struct 	ESPMessage				esp_msg;
 
 static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
@@ -111,6 +103,7 @@ static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 					// Save to eeprom
 					// *(uchar *)(EEP_BASE + EEP_SW_SMOOTH) = CHECKBOX_GetState(hItem);
 
+					#if 0
 					if(esp_msg.ucProcStatus == TASK_PROC_IDLE)
 					{
 						esp_msg.ucMessageID  = 0x04;			// SQLite write
@@ -125,6 +118,7 @@ static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 
 						osMessagePut(hEspMessage, (ulong)&esp_msg, osWaitForever);
 					}
+					#endif
 
 					break;
 				}
@@ -182,6 +176,22 @@ static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 			break;
 		}
 
+		case ID_RADIO_0:
+		{
+			if(NCode == WM_NOTIFICATION_VALUE_CHANGED)
+			{
+				uchar val;
+
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_RADIO_0);
+				val = (uchar)RADIO_GetValue(hItem);
+				printf("new theme id=%d\r\n", val);
+
+				if(val < 2)
+					ui_s.theme_id = val;
+			}
+			break;
+		}
+
 		// -------------------------------------------------------------
 		default:
 			break;
@@ -218,6 +228,16 @@ static void _cbDialog(WM_MESSAGE * pMsg)
 			CHECKBOX_SetFont(hItem,&GUI_Font16_1);
 			CHECKBOX_SetText(hItem, "Show Iambic Keyer Control");
 			CHECKBOX_SetState(hItem, *(uchar *)(EEP_BASE + EEP_KEYER_ON));
+
+			// Initialization of 'Radio'
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_RADIO_0);
+			RADIO_SetFont(hItem,&GUI_Font20_1);
+			RADIO_SetText(hItem, "Kenwood",	0);
+			RADIO_SetText(hItem, "RedDawn",	1);
+			RADIO_SetText(hItem, "Icom",	2);
+
+			if(ui_s.theme_id < 3)
+				RADIO_SetValue(hItem, ui_s.theme_id);
     
 			esp_msg.ucProcStatus = TASK_PROC_IDLE;
 			break;
